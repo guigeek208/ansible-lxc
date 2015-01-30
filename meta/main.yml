@@ -1,6 +1,6 @@
 ---
 galaxy_info:
-  author: "Pierre Mavro"
+  author: "Pierre Mavro / Guillaume Roche"
   company: 
   license: GPL
   min_ansible_version: 1.4

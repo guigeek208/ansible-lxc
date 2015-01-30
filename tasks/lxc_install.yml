@@ -36,10 +36,37 @@
 # Mount cgroup+fstab
 - mount: src=cgroup name='/sys/fs/cgroup' opts=defaults fstype=cgroup state=mounted
 
-# network interface
-- name: configure network interfaces
-  template: src=interfaces.j2 dest=/etc/network/interfaces backup=yes
-#  notify: restart network
+# network interface bridge
+- name: configure network bridge interfaces
+  template: src=interfaces_bridge.j2 dest=/etc/network/interfaces backup=yes
+  when: lxc_network_mode == "bridge"
+  notify: restart network
+
+# network interface nat
+- name: configure network nat interfaces
+  template: src=interfaces_nat.j2 dest=/etc/network/interfaces backup=yes
+  when: lxc_network_mode == "nat"
+  notify: restart network
+
+# check /var/lib/lxc
+- name: Check if path exists
+  stat: path=/var/lib/lxc
+  register: check_path
+
+# create the lxc directory /home/lxc
+- name: create the lxc directory
+  command: mv /var/lib/lxc /home
+  when: check_path.stat.isdir
+  
+# check /var/lib/lxc
+- name: Check if path exists
+  stat: path=/var/lib/lxc
+  register: check_path
+
+# link to lxc directory
+- name: link to lxc directory
+  file: src=/home/lxc dest=/var/lib/lxc owner=root group=root state=link
+  when: not check_path.stat.exists
 
 # Dnsmasq
 - name: configure dnsmasq
